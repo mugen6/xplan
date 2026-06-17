@@ -1,4 +1,4 @@
-module example.com/kdltest
+module github.com/mugen6/xplan
 
 go 1.26.3
 
