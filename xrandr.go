@@ -101,4 +101,3 @@ func isOutputHeader(line string) bool {
 
 	return fields[1] == "connected" || fields[1] == "disconnected"
 }
-

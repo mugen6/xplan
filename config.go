@@ -114,4 +114,3 @@ func countNonEmpty(values ...string) int {
 
 	return n
 }
-
