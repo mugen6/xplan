@@ -1,0 +1,7 @@
+# Go
+*.o
+*.a
+*.so
+.DS_Store
+/bin/
+/dist/
