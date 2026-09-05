@@ -4,14 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-
-	"golang.org/x/term"
 )
-
-// isTTY reports whether stdout is connected to a terminal.
-func isTTY() bool {
-	return term.IsTerminal(int(os.Stdout.Fd()))
-}
 
 // setupLogger returns a slog.Logger emitting logfmt-style text to stdout,
 // without a time field (the log collector adds its own).

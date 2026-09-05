@@ -61,48 +61,47 @@ func parseFlags() options {
 }
 
 // fail prints an error and exits with code 2 (operational error).
-// On a TTY it prints a friendly line to stderr; otherwise it logs via slog.
 func fail(opts options, msg string, attrs ...any) {
-	if isTTY() && !opts.ForceLogfmt {
+	if opts.ForceLogfmt {
+		slog.Error(msg, attrs...)
+	} else {
 		fmt.Fprintf(os.Stderr, "error: %s", msg)
 		for i := 0; i+1 < len(attrs); i += 2 {
 			fmt.Fprintf(os.Stderr, " %v=%v", attrs[i], attrs[i+1])
 		}
 		fmt.Fprintln(os.Stderr)
-	} else {
-		slog.Error(msg, attrs...)
 	}
 	os.Exit(2)
 }
 
-// reportToOutput emits the comparison results: human-readable on a TTY,
-// logfmt otherwise (or always, if --logfmt was passed).
+// reportToOutput emits the comparison results: human-readable by default,
+// logfmt if --logfmt was passed.
 func reportToOutput(report Report, opts options) {
-	if isTTY() && !opts.ForceLogfmt {
-		for _, r := range report.Results {
-			printResultLine(r)
+	if opts.ForceLogfmt {
+		if report.OK {
+			slog.Info("display state ok",
+				"trigger", "oneshot",
+				"outputs_checked", len(report.Results),
+			)
+			return
 		}
-		return
-	}
 
-	if report.OK {
-		slog.Info("display state ok",
-			"trigger", "oneshot",
-			"outputs_checked", len(report.Results),
-		)
+		for _, r := range report.Results {
+			if r.Status == StatusOK {
+				continue
+			}
+			slog.Error("display output check failed",
+				"trigger", "oneshot",
+				"output", r.Output,
+				"status", string(r.Status),
+				"want_mode", r.WantMode,
+				"got_mode", r.GotMode,
+			)
+		}
 		return
 	}
 
 	for _, r := range report.Results {
-		if r.Status == StatusOK {
-			continue
-		}
-		slog.Error("display output check failed",
-			"trigger", "oneshot",
-			"output", r.Output,
-			"status", string(r.Status),
-			"want_mode", r.WantMode,
-			"got_mode", r.GotMode,
-		)
+		printResultLine(r)
 	}
 }
